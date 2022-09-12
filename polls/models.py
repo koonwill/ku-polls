@@ -18,8 +18,17 @@ class Question(models.Model):
         ordering='pub_date',
         description='Published recently?',)
     def was_published_recently(self):
-        now = timezone.now()
-        return now - datetime.timedelta(days=1) <= self.pub_date <= now
+        return timezone.localtime - datetime.timedelta(days=1) <= self.pub_date <= timezone.localtime
+
+    def is_published(self):
+        """return True if current date is on or after question’s publication date."""
+        return timezone.localtime() >= self.pub_date
+
+    def can_vote(self):
+        """check user in the voting period or not then 
+        returns True if voting is allowed for this question
+        """
+        return self.pub_date <= timezone.localtime() <= self.end_date
 
 
 class Choice(models.Model):
