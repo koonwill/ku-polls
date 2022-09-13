@@ -1,3 +1,4 @@
+"""Views for Polls Application"""
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -54,6 +55,7 @@ class ResultsView(generic.DetailView):
 
 
 def vote(request, question_id):
+    """Vote function for voting button"""
     question = get_object_or_404(Question, pk=question_id)
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
