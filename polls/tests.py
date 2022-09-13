@@ -1,4 +1,5 @@
 import datetime
+from time import time
 
 from django.test import TestCase
 from django.utils import timezone
@@ -26,7 +27,7 @@ class QuestionModelTests(TestCase):
         was_published_recently() returns False for questions whose pub_date
         is in the future.
         """
-        time = timezone.now() + datetime.timedelta(days=30)
+        time = timezone.localtime() + datetime.timedelta(days=30)
         future_question = Question(pub_date=time)
         self.assertIs(future_question.was_published_recently(), False)
 
@@ -35,7 +36,7 @@ class QuestionModelTests(TestCase):
         was_published_recently() returns False for questions whose pub_date
         is older than 1 day.
         """
-        time = timezone.now() - datetime.timedelta(days=1, seconds=1)
+        time = timezone.localtime() - datetime.timedelta(days=1, seconds=1)
         old_question = Question(pub_date=time)
         self.assertIs(old_question.was_published_recently(), False)
 
@@ -44,9 +45,49 @@ class QuestionModelTests(TestCase):
         was_published_recently() returns True for questions whose pub_date
         is within the last day.
         """
-        time = timezone.now() - datetime.timedelta(hours=23, minutes=59, seconds=59)
+        time = timezone.localtime() - datetime.timedelta(hours=23, minutes=59, seconds=59)
         recent_question = Question(pub_date=time)
         self.assertIs(recent_question.was_published_recently(), True)
+
+    def test_is_published_with_future_question(self):
+        """is_published() returns False for question that not published yet."""
+        time = timezone.localtime() + datetime.timedelta(days=30)
+        future_question = Question(pub_date=time)
+        self.assertIs(future_question.is_published(), False)
+
+    def test_is_published_with_past_question(self):
+        """is_published() return True for question that already published."""
+        time = timezone.localtime() - datetime.timedelta(days=1, seconds=1)
+        past_question = Question(pub_date=time)
+        self.assertIs(past_question.is_published(), True)
+
+    def test_can_vote_within_voting_period(self):
+        """If Question in voting period return True. if not return False."""
+        votable = create_question('', -1, 5) # Published
+        unvotable = create_question('', 5, 3) # Not Published
+        self.assertIs(votable.can_vote(), True)
+        self.assertIs(unvotable.can_vote(), False)
+
+    def test_can_vote_without_end_day(self):
+        """If end days didn't set can_vote() still return True(Can vote)."""
+        time = timezone.localtime() - datetime.timedelta(days=1)
+        question = Question(pub_date=time)
+        self.assertIs(question.can_vote(), True)
+
+    def test_can_vote_after_end_day(self):
+        """can_vote() returns False for question that passing end day."""
+        end_question = create_question('',pub_days=-2, end_days=-1)
+        self.assertIs(end_question.can_vote(), False)
+
+    def test_can_vote_current_time_with_pub_day(self):
+        """can_vote() returns True if voting in the same time as pub_day"""
+        question = create_question('', 0, 5)
+        self.assertIs(question.can_vote(), True)
+
+    def test_can_vote_current_time_with_end_day(self):
+        """can_vote() returns True if voting in the same time as end_day"""
+        question = create_question('', -1, 0)
+        self.assertIs(question.can_vote(), True)
 
 
 class QuestionIndexViewTests(TestCase):
@@ -109,19 +150,19 @@ class QuestionDetailViewTests(TestCase):
     def test_future_question(self):
         """
         The detail view of a question with a pub_date in the future
-        returns a 404 not found.
+        returns a 302 not found.
         """
         future_question = create_question(question_text='Future question.', pub_days=3, end_days=5)
         url = reverse('polls:detail', args=(future_question.id,))
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 302)
 
     def test_past_question(self):
         """
         The detail view of a question with a pub_date in the past
         displays the question's text.
         """
-        past_question = create_question(question_text='Past Question.', pub_days=-5, end_days=-3)
+        past_question = create_question(question_text='Past Question.', pub_days=-5, end_days=5)
         url = reverse('polls:detail', args=(past_question.id,))
         response = self.client.get(url)
         self.assertContains(response, past_question.question_text)
