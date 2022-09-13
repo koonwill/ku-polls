@@ -18,7 +18,8 @@ class Question(models.Model):
         ordering='pub_date',
         description='Published recently?',)
     def was_published_recently(self):
-        return timezone.localtime - datetime.timedelta(days=1) <= self.pub_date <= timezone.localtime
+        now = timezone.localtime()
+        return now - datetime.timedelta(days=1) <= self.pub_date <= now
 
     def is_published(self):
         """return True if current date is on or after question’s publication date."""
