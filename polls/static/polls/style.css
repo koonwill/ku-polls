@@ -5,3 +5,18 @@ li a {
 body {
     background: white url("images/background.png") no-repeat;
 }
+h1{
+    color: black;
+}
+
+.question caption{
+    color: black; font-size: xx-large; text-align: center;
+}
+
+.question th{
+    color: black; font-size: large; text-align: left;
+}
+
+.question td{
+    color: black; font-size: large; text-align: left;
+}
