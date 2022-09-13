@@ -1,12 +1,11 @@
 {% load static %}
 <link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
 
-<h1>Poll lists</h1>
-
 {% if latest_question_list %}
 <ul>
     <table class="question">
         <thead>
+            <caption>Poll List!!</caption>
             <tr>
                 <th>Question</th>
                 <th>Result</th>
