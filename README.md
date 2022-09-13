@@ -19,6 +19,7 @@ All project documents are in the [Project Wiki](https://github.com/koonwill/ku-p
 - [Vision Statement](https://github.com/koonwill/ku-polls/wiki/Vision-Statement)
 - [Requirements](https://github.com/koonwill/ku-polls/wiki/Requirements)
 - [Iteration 1 Plan](https://github.com/koonwill/ku-polls/wiki/Iteration-1-Plan)
+- [Iteration 2 Plan](https://github.com/koonwill/ku-polls/wiki/Iteration-2-Plan)
 - [Development Plan](https://github.com/koonwill/ku-polls/wiki/Development-Plan)
 
 [django-tutorial]: https://docs.djangoproject.com/en/4.1/intro/tutorial01/
