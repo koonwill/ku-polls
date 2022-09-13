@@ -5,3 +5,14 @@ li a {
 body {
     background: white url("images/background.png") no-repeat;
 }
+h1{
+    color: whitesmoke;
+}
+
+.question th{
+    color: whitesmoke;
+}
+
+.question td{
+    color: whitesmoke;
+}
