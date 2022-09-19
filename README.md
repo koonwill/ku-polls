@@ -12,6 +12,12 @@ https://cpske.github.io/ISP) course at Kasetsart University.
 
 to be added.
 
+## Demo Username and Password
+| Username  | Password  |
+|-----------|-----------|
+|   demo1   | 1234 |
+|   demo2   | 1234 |
+
 ## Project Documents
 
 All project documents are in the [Project Wiki](https://github.com/koonwill/ku-polls/wiki/Home).
