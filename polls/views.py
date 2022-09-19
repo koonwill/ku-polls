@@ -41,8 +41,7 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
 
     def get(self, request, pk):
         """Handle of get request to return correct response to detail view."""
-        if not request.user.is_authenticated:
-            return redirect(to='http://127.0.0.1:8000/accounts/login')
+        user = request.user
         try:
             question = Question.objects.get(pk=pk)
         except Question.DoesNotExist:
@@ -52,7 +51,12 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
         if not question.can_vote():
             messages.error(request, "Voting is not allowed on this question")
             return HttpResponseRedirect(reverse('polls:index'))
-        return render(request, 'polls/detail.html', {'question': question})
+        try:
+            # get choice
+            vote_info = Vote.objects.get(user=user).choice
+        except Vote.DoesNotExist:
+            return HttpResponseRedirect(reverse('polls:index'))
+        return render(request, 'polls/detail.html', {'question': question, 'vote_info' : vote_info})
 
 
 class ResultsView(generic.DetailView):
