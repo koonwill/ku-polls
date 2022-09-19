@@ -48,7 +48,7 @@ class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
 
-    def all_vote(self):
+    def votes(self):
         """return vote amount of that choice."""
         return Vote.objects.filter(choice=self).count()
 
@@ -60,4 +60,8 @@ class Vote(models.Model):
     """Model for votes in Polls."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    @property
+    def question(self):
+        """return question that selected."""
+        return self.choice.question
