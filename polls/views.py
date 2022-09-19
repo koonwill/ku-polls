@@ -55,7 +55,7 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
             # get choice
             vote_info = Vote.objects.get(user=user).choice
         except Vote.DoesNotExist:
-            return HttpResponseRedirect(reverse('polls:index'))
+            return render(request, 'polls/detail.html', {'question': question})
         return render(request, 'polls/detail.html', {'question': question, 'vote_info' : vote_info})
 
 
@@ -77,12 +77,13 @@ def vote(request, question_id):
             'question': question,
             'error_message': "You didn't select a choice.",
         })
-    try:
-        # check this user vote history.
-        vote = Vote.objects.get(user=user)
-        vote.choice = selected_choice
-        vote.save()
-    except Vote.DoesNotExist:
-        Vote.objects.create(user=user, choice=selected_choice).save()
+    if question.can_vote():
+        try:
+            # check this user vote history.
+            vote = Vote.objects.get(user=user)
+            vote.choice = selected_choice
+            vote.save()
+        except Vote.DoesNotExist:
+            Vote.objects.create(user=user, choice=selected_choice).save()
     # after vote its will redirect to results page.
     return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
