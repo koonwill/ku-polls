@@ -25,6 +25,9 @@ class IndexView(generic.ListView):
             pub_date__lte=timezone.localtime()
         ).order_by('-pub_date')[:5]
 
+class EyesOnlyView(LoginRequiredMixin, generic.ListView):
+    # this is the default. Same default as in auth_required decorator
+    login_url = '/accounts/login/'
 
 class DetailView(LoginRequiredMixin, generic.DetailView):
     """Detail view of detail.html"""
@@ -55,7 +58,7 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
-@login_required
+@login_required(login_url='/accounts/login')
 def vote(request, question_id):
     """Vote function for voting button"""
     question = get_object_or_404(Question, pk=question_id)
