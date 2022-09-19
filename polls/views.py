@@ -1,5 +1,5 @@
 """Views for Polls Application"""
-from django.http import HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views import generic
@@ -74,9 +74,11 @@ def vote(request, question_id):
             'error_message': "You didn't select a choice.",
         })
     try:
+        # check this user vote history.
         vote = Vote.objects.get(user=user)
         vote.choice = selected_choice
         vote.save()
     except Vote.DoesNotExist:
         Vote.objects.create(user=user, choice=selected_choice).save()
+    # after vote its will redirect to results page.
     return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
