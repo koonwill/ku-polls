@@ -15,8 +15,8 @@ to be added.
 ## Demo Username and Password
 | Username  | Password  |
 |-----------|-----------|
-|   demo1   | 1234 |
 |   demo2   | 1234 |
+|   demo3   | 1234 |
 
 ## Project Documents
 
