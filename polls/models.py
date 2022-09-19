@@ -61,6 +61,10 @@ class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
 
+    def __str__(self) -> str:
+        """str -- Polls user"""
+        return self.user
+
     @property
     def question(self):
         """return question that selected."""
