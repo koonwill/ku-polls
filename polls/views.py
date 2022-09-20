@@ -77,13 +77,12 @@ def vote(request, question_id):
             'question': question,
             'error_message': "You didn't select a choice.",
         })
-    if question.can_vote():
-        try:
-            # check this user vote history.
-            vote = Vote.objects.get(user=user, choice__in=question.choice_set.all())
-            vote.choice = selected_choice
-            vote.save()
-        except Vote.DoesNotExist:
-            Vote.objects.create(user=user, choice=selected_choice).save()
+    try:
+        # check this user vote history.
+        vote = Vote.objects.get(user=user, choice__in=question.choice_set.all())
+        vote.choice = selected_choice
+        vote.save()
+    except Vote.DoesNotExist:
+        Vote.objects.create(user=user, choice=selected_choice).save()
     # after vote its will redirect to results page.
     return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
