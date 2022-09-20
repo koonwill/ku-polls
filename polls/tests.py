@@ -1,4 +1,5 @@
 import datetime
+from urllib import response
 
 from django.test import TestCase
 from django.utils import timezone
@@ -84,7 +85,9 @@ class QuestionModelTests(TestCase):
         self.assertIs(question.can_vote(), True)
 
     def test_can_vote_current_time_with_end_day(self):
-        """can_vote() returns True if voting in the same time as end_day"""
+        """can_vote() returns True if voting in the same time as end_day
+        (Sometime fail if running test took a long time. due to datetime)
+        """
         question = create_question('', -1, 0)
         self.assertIs(question.can_vote(), True)
 
@@ -174,4 +177,41 @@ class QuestionDetailViewTests(TestCase):
 
 class VoteViewTests(TestCase):
     def setUp(self) -> None:
-        return 
+        """Initialize user for test"""
+        self.user = User.objects.create_user('Test2', password='password')
+        self.user.save()
+        self.client.login(username='Test2', password='password')
+
+    def test_vote_count(self):
+        """Check vote count for in question Test1."""
+        question = create_question(question_text='Test1', pub_days=-1, end_days=3)
+        choice = question.choice_set.create(choice_text='Test')
+        Vote.objects.create(user=self.user, choice=choice)
+        self.assertIs(1, choice.votes())
+
+    def test_vote_two_question(self):
+        """Vote more than one question and check."""
+        # Vote for question 1
+        question1 = create_question(question_text='Test 1', pub_days=-1, end_days=3)
+        choice1 = question1.choice_set.create(choice_text='Test1')
+        Vote.objects.create(user=self.user, choice=choice1)
+        self.assertIs(1, choice1.votes())
+        # Vote for question 2
+        question2 = create_question(question_text='Test 2', pub_days=-1, end_days=3)
+        choice2 = question2.choice_set.create(choice_text='Test2')
+        Vote.objects.create(user=self.user, choice=choice2)
+        self.assertIs(1, choice2.votes())
+
+    def test_only_authenticated_user_can_vote(self):
+        """Only authenticated user can vote"""
+        question = create_question(question_text='Test 1', pub_days=-1, end_days=3)
+        response1 = self.client.post(reverse('polls:vote', args=(question.id,)))
+        self.assertEqual(response1.status_code, 200)
+        self.client.logout()
+        response2 = self.client.post(reverse('polls:vote', args=(question.id,)))
+        self.assertEqual(response2.status_code, 302)
+
+    def test_revote_in_voted_question(self):
+        """After revote same choice in voted question its will be the same. 
+        But if user change choice it will save the new one instead."""
+        pass
