@@ -53,7 +53,7 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
             return HttpResponseRedirect(reverse('polls:index'))
         try:
             # get choice
-            vote_info = Vote.objects.get(user=user).choice
+            vote_info = Vote.objects.get(user=user, choice__in=question.choice_set.all()).choice
         except Vote.DoesNotExist:
             return render(request, 'polls/detail.html', {'question': question})
         return render(request, 'polls/detail.html', {'question': question, 'vote_info' : vote_info})
@@ -80,7 +80,7 @@ def vote(request, question_id):
     if question.can_vote():
         try:
             # check this user vote history.
-            vote = Vote.objects.get(user=user)
+            vote = Vote.objects.get(user=user, choice__in=question.choice_set.all())
             vote.choice = selected_choice
             vote.save()
         except Vote.DoesNotExist:
