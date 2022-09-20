@@ -1,11 +1,10 @@
 import datetime
-from time import time
 
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import Question
+from .models import Question, Vote, User
 
 
 def create_question(question_text, pub_days, end_days):
@@ -147,6 +146,12 @@ class QuestionIndexViewTests(TestCase):
             [question2, question1],
         )
 class QuestionDetailViewTests(TestCase):
+    def setUp(self) -> None:
+        """Initialize user for test"""
+        self.user = User.objects.create_user('Test1', password='password')
+        self.user.save()
+        self.client.login(username='Test1', password='password')
+
     def test_future_question(self):
         """
         The detail view of a question with a pub_date in the future
@@ -166,3 +171,7 @@ class QuestionDetailViewTests(TestCase):
         url = reverse('polls:detail', args=(past_question.id,))
         response = self.client.get(url)
         self.assertContains(response, past_question.question_text)
+
+class VoteViewTests(TestCase):
+    def setUp(self) -> None:
+        return 
