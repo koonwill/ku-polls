@@ -4,8 +4,13 @@
     <legend><h1>{{ question.question_text }}</h1></legend>
     {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
     {% for choice in question.choice_set.all %}
+        {% if choice == vote_info %}
+        <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" checked />
+        <label for="choice{{ forloop.counter }}">{{ choice.choice_text }} -> Previous select</label><br>
+        {% else %}
         <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}">
         <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br>
+        {% endif %}
     {% endfor %}
 </fieldset>
 <input type="submit" value="Vote">

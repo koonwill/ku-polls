@@ -1,12 +1,14 @@
 """Views for Polls Application"""
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import Choice, Question
+from .models import Choice, Question, Vote
 
 
 class IndexView(generic.ListView):
@@ -23,8 +25,11 @@ class IndexView(generic.ListView):
             pub_date__lte=timezone.localtime()
         ).order_by('-pub_date')[:5]
 
+class EyesOnlyView(LoginRequiredMixin, generic.ListView):
+    # this is the default. Same default as in auth_required decorator
+    login_url = '/accounts/login/'
 
-class DetailView(generic.DetailView):
+class DetailView(LoginRequiredMixin, generic.DetailView):
     """Detail view of detail.html"""
     model = Question
     template_name = 'polls/detail.html'
@@ -36,6 +41,7 @@ class DetailView(generic.DetailView):
 
     def get(self, request, pk):
         """Handle of get request to return correct response to detail view."""
+        user = request.user
         try:
             question = Question.objects.get(pk=pk)
         except Question.DoesNotExist:
@@ -45,7 +51,12 @@ class DetailView(generic.DetailView):
         if not question.can_vote():
             messages.error(request, "Voting is not allowed on this question")
             return HttpResponseRedirect(reverse('polls:index'))
-        return render(request, 'polls/detail.html', {'question': question})
+        try:
+            # get choice
+            vote_info = Vote.objects.get(user=user, choice__in=question.choice_set.all()).choice
+        except Vote.DoesNotExist:
+            return render(request, 'polls/detail.html', {'question': question})
+        return render(request, 'polls/detail.html', {'question': question, 'vote_info' : vote_info})
 
 
 class ResultsView(generic.DetailView):
@@ -53,10 +64,11 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
-
+@login_required
 def vote(request, question_id):
     """Vote function for voting button"""
     question = get_object_or_404(Question, pk=question_id)
+    user = request.user
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
@@ -65,10 +77,12 @@ def vote(request, question_id):
             'question': question,
             'error_message': "You didn't select a choice.",
         })
-    else:
-        selected_choice.votes += 1
-        selected_choice.save()
-        # Always return an HttpResponseRedirect after successfully dealing
-        # with POST data. This prevents data from being posted twice if a
-        # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+    try:
+        # check this user vote history.
+        vote = Vote.objects.get(user=user, choice__in=question.choice_set.all())
+        vote.choice = selected_choice
+        vote.save()
+    except Vote.DoesNotExist:
+        Vote.objects.create(user=user, choice=selected_choice).save()
+    # after vote its will redirect to results page.
+    return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))

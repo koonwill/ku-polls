@@ -1,11 +1,11 @@
 import datetime
-from time import time
+from urllib import response
 
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
 
-from .models import Question
+from .models import Question, Vote, User
 
 
 def create_question(question_text, pub_days, end_days):
@@ -85,7 +85,9 @@ class QuestionModelTests(TestCase):
         self.assertIs(question.can_vote(), True)
 
     def test_can_vote_current_time_with_end_day(self):
-        """can_vote() returns True if voting in the same time as end_day"""
+        """can_vote() returns True if voting in the same time as end_day
+        (Sometime fail if running test took a long time. due to datetime)
+        """
         question = create_question('', -1, 0)
         self.assertIs(question.can_vote(), True)
 
@@ -147,6 +149,12 @@ class QuestionIndexViewTests(TestCase):
             [question2, question1],
         )
 class QuestionDetailViewTests(TestCase):
+    def setUp(self) -> None:
+        """Initialize user for test"""
+        self.user = User.objects.create_user('Test1', password='password')
+        self.user.save()
+        self.client.login(username='Test1', password='password')
+
     def test_future_question(self):
         """
         The detail view of a question with a pub_date in the future
@@ -166,3 +174,51 @@ class QuestionDetailViewTests(TestCase):
         url = reverse('polls:detail', args=(past_question.id,))
         response = self.client.get(url)
         self.assertContains(response, past_question.question_text)
+
+class VoteViewTests(TestCase):
+    def setUp(self) -> None:
+        """Initialize user for test"""
+        self.user = User.objects.create_user('Test2', password='password')
+        self.user.save()
+        self.client.login(username='Test2', password='password')
+
+    def test_vote_count(self):
+        """Check vote count for in question Test1."""
+        question = create_question(question_text='Test1', pub_days=-1, end_days=3)
+        choice = question.choice_set.create(choice_text='Test')
+        Vote.objects.create(user=self.user, choice=choice)
+        self.assertIs(1, choice.votes())
+
+    def test_vote_two_question(self):
+        """Vote more than one question and check."""
+        # Vote for question 1
+        question1 = create_question(question_text='Test 1', pub_days=-1, end_days=3)
+        choice1 = question1.choice_set.create(choice_text='Test1')
+        Vote.objects.create(user=self.user, choice=choice1)
+        self.assertIs(1, choice1.votes())
+        # Vote for question 2
+        question2 = create_question(question_text='Test 2', pub_days=-1, end_days=3)
+        choice2 = question2.choice_set.create(choice_text='Test2')
+        Vote.objects.create(user=self.user, choice=choice2)
+        self.assertIs(1, choice2.votes())
+
+    def test_only_authenticated_user_can_vote(self):
+        """Only authenticated user can vote"""
+        question = create_question(question_text='Test 1', pub_days=-1, end_days=3)
+        response1 = self.client.post(reverse('polls:vote', args=(question.id,)))
+        self.assertEqual(response1.status_code, 200)
+        self.client.logout()
+        response2 = self.client.post(reverse('polls:vote', args=(question.id,)))
+        self.assertEqual(response2.status_code, 302)
+
+    def test_one_vote_one_question(self):
+        """One user can vote only one choice for each question."""
+        question = create_question(question_text='Test 1', pub_days=-1, end_days=3)
+        choice1 = question.choice_set.create(choice_text='choice1')
+        choice2 = question.choice_set.create(choice_text='choice2')
+        self.client.post(reverse('polls:vote', args=(question.id,)), {'choice': choice1.id})
+        self.assertEqual(Vote.objects.get(user=self.user, choice__in=question.choice_set.all()).choice, choice1)
+        self.assertEqual(Vote.objects.all().count(), 1)
+        self.client.post(reverse('polls:vote', args=(question.id,)), {'choice': choice2.id})
+        self.assertEqual(Vote.objects.get(user=self.user, choice__in=question.choice_set.all()).choice, choice2)
+        self.assertEqual(Vote.objects.all().count(), 1)
