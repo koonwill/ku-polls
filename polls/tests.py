@@ -211,7 +211,14 @@ class VoteViewTests(TestCase):
         response2 = self.client.post(reverse('polls:vote', args=(question.id,)))
         self.assertEqual(response2.status_code, 302)
 
-    def test_revote_in_voted_question(self):
-        """After revote same choice in voted question its will be the same. 
-        But if user change choice it will save the new one instead."""
-        pass
+    def test_one_vote_one_question(self):
+        """One user can vote only one choice for each question."""
+        question = create_question(question_text='Test 1', pub_days=-1, end_days=3)
+        choice1 = question.choice_set.create(choice_text='choice1')
+        choice2 = question.choice_set.create(choice_text='choice2')
+        self.client.post(reverse('polls:vote', args=(question.id,)), {'choice': choice1.id})
+        self.assertEqual(Vote.objects.get(user=self.user, choice__in=question.choice_set.all()).choice, choice1)
+        self.assertEqual(Vote.objects.all().count(), 1)
+        self.client.post(reverse('polls:vote', args=(question.id,)), {'choice': choice2.id})
+        self.assertEqual(Vote.objects.get(user=self.user, choice__in=question.choice_set.all()).choice, choice2)
+        self.assertEqual(Vote.objects.all().count(), 1)
