@@ -9,8 +9,23 @@ App created as part of the [Individual Software Process](
 https://cpske.github.io/ISP) course at Kasetsart University.
 
 ## Install and Run
-
-to be added.
+1. Clone this repository
+    ``` sh
+    git clone https://github.com/koonwill/ku-polls.git
+    ```
+2. Install requirements.txt
+    ``` sh
+    pip install -r requirements.txt
+    ```
+3. Follow the instructions in sample.env then create ```.env``` file name to configuration. (you can get secret key [here](https://djecrety.ir/))
+4. Run server by (Must run in ku-polls directory.):
+    ``` sh
+    python manage.py runserver
+    ```
+5. Use this URL for application
+    ``` sh
+    http://127.0.0.1:8000/
+    ```
 
 ## Demo Username and Password
 | Username  | Password  |
