@@ -29,16 +29,17 @@ class Question(models.Model):
         return now - datetime.timedelta(days=1) <= self.pub_date <= now
 
     def is_published(self):
-        """return True if current date is on or after question’s publication date."""
+        """return True if current date is on or after
+        question’s publication date."""
         now = timezone.localtime()
         return now >= self.pub_date
 
     def can_vote(self):
-        """check user in the voting period or not then 
+        """check user in the voting period or not then
         return True if voting is allowed for this question.
         """
         now = timezone.localtime()
-        if self.end_date == None:
+        if self.end_date is None:
             return self.pub_date <= now
         return self.pub_date <= now <= self.end_date
 
@@ -55,6 +56,7 @@ class Choice(models.Model):
     def __str__(self):
         """str -- Poll choice text."""
         return self.choice_text
+
 
 class Vote(models.Model):
     """Model for votes in Polls."""

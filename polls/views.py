@@ -1,6 +1,6 @@
 """Views for Polls Application"""
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
@@ -25,9 +25,11 @@ class IndexView(generic.ListView):
             pub_date__lte=timezone.localtime()
         ).order_by('-pub_date')[:5]
 
+
 class EyesOnlyView(LoginRequiredMixin, generic.ListView):
     # this is the default. Same default as in auth_required decorator
     login_url = '/accounts/login/'
+
 
 class DetailView(LoginRequiredMixin, generic.DetailView):
     """Detail view of detail.html"""
@@ -53,16 +55,19 @@ class DetailView(LoginRequiredMixin, generic.DetailView):
             return HttpResponseRedirect(reverse('polls:index'))
         try:
             # get choice
-            vote_info = Vote.objects.get(user=user, choice__in=question.choice_set.all()).choice
+            vote_info = Vote.objects.get(
+                user=user, choice__in=question.choice_set.all()).choice
         except Vote.DoesNotExist:
             return render(request, 'polls/detail.html', {'question': question})
-        return render(request, 'polls/detail.html', {'question': question, 'vote_info' : vote_info})
+        return render(request, 'polls/detail.html',
+                      {'question': question, 'vote_info': vote_info})
 
 
 class ResultsView(generic.DetailView):
     """Results view of results.html"""
     model = Question
     template_name = 'polls/results.html'
+
 
 @login_required
 def vote(request, question_id):
@@ -79,7 +84,8 @@ def vote(request, question_id):
         })
     try:
         # check this user vote history.
-        vote = Vote.objects.get(user=user, choice__in=question.choice_set.all())
+        vote = Vote.objects.get(
+            user=user, choice__in=question.choice_set.all())
         vote.choice = selected_choice
         vote.save()
     except Vote.DoesNotExist:
