@@ -26,7 +26,10 @@ https://cpske.github.io/ISP) course at Kasetsart University.
     ``` sh
     http://127.0.0.1:8000/
     ```
-
+## Demo Admin Username and Password
+| Username  | Password  |
+|-----------|-----------|
+|   Admin1   | testadmin |
 ## Demo Username and Password
 | Username  | Password  |
 |-----------|-----------|
