@@ -14,7 +14,7 @@ def create_question(question_text, pub_days, end_days):
     in the past, positive for questions that have yet to be published).
     """
     pub_time = timezone.localtime() + datetime.timedelta(days=pub_days)
-    end_time = timezone.localtime() + datetime.timedelta(days=end_days)
+    end_time = timezone.localtime() + datetime.timedelta(days=end_days, milliseconds=200)
 
     return Question.objects.create(question_text=question_text,
                                    pub_date=pub_time, end_date=end_time)
