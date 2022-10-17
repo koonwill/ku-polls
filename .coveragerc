@@ -4,5 +4,5 @@ omit =
     polls/migrations/*
     polls/__init__.py
     polls/tests.py
-    /mysite/*
+    mysite/*
     manage.py
