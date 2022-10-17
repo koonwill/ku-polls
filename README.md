@@ -1,5 +1,5 @@
 # KU-Polls
-[![Test](https://github.com/koonwill/ku-polls/actions/workflows/django.yml/badge.svg)
+![Test](https://github.com/koonwill/ku-polls/actions/workflows/django.yml/badge.svg)
 [![codecov](https://codecov.io/gh/koonwill/ku-polls/branch/main/graph/badge.svg?token=P0GBYMB6RZ)](https://codecov.io/gh/koonwill/ku-polls)
 ## Online Polls And Surveys
 
